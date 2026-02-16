@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Covenant Studio Forge 66</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Benny's Sovereign Creative Forge</h1>
+    <p>Symbolic Creative Operating System – Loading Renaissance One...</p>
+  </header>
+  <main>
+    <section>
+      <h2>Welcome to the Forge</h2>
+      <p>Symbolic OS foundation active.</p>
+    </section>
+  </main>
+</body>
+</html>
+
+body {
+  margin: 0;
+  background: #000;
+  color: #a855f7;
+  font-family: sans-serif;
+}
+header {
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 2px solid #a855f7;
+}
+h1 {
+  margin: 0;
+  text-shadow: 0 0 15px #a855f7;
+}
+Commit: "Add basic neon dark theme
+
+JS stub: frontend/js/main.js
+console.log("Sovereign Forge initialized – MACHETE CUTTER active");
+
