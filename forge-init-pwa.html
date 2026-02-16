@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forge Auto-Init PWA</title>
+  <link rel="manifest" href="data:application/manifest+json,{
+    \"name\": \"Forge Auto-Init\",
+    \"short_name\": \"ForgeInit\",
+    \"start_url\": \".\",
+    \"display\": \"standalone\",
+    \"background_color\": \"#000000\",
+    \"theme_color\": \"#a855f7\",
+    \"icons\": [{
+      \"src\": \"https://via.placeholder.com/192/000/a855f7?text=F\",
+      \"sizes\": \"192x192\",
+      \"type\": \"image/png\"
+    }]
+  }">
+  <meta name="theme-color" content="#a855f7">
+  <style>
+    body { background: #000; color: #a855f7; font-family: sans-serif; padding: 20px; text-align: center; }
+    h1 { text-shadow: 0 0 10px #a855f7; }
+    input, button { margin: 10px 0; padding: 12px; width: 100%; max-width: 400px; box-sizing: border-box; }
+    button { background: #a855f7; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+    #status { margin-top: 20px; white-space: pre-wrap; color: #fff; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>Forge Auto-Init PWA</h1>
+  <p>Automate repo setup: creates folders/files from schemas</p>
+
+  <input id="pat" type="password" placeholder="GitHub PAT (repo scope)" required>
+  <input id="owner" type="text" value="BennyA40" placeholder="Owner">
+  <input id="repo" type="text" value="Covenant-studio-forge-66" placeholder="Repo">
+
+  <button onclick="initStructure()">Initialize Structure</button>
+
+  <div id="status">Ready. Enter PAT and tap button.</div>
+
+  <script>
+    // Register service worker for PWA/offline
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register(new URL('sw.js', import.meta.url), {scope: './'})
+        .then(reg => console.log('SW registered'))
+        .catch(err => console.log('SW error:', err));
+    }
+
+    async function initStructure() {
+      const pat = document.getElementById('pat').value.trim();
+      const owner = document.getElementById('owner').value.trim();
+      const repo = document.getElementById('repo').value.trim();
+      const status = document.getElementById('status');
+
+      if (!pat) { status.textContent = 'Error: PAT required'; return; }
+
+      status.textContent = 'Starting...\n';
+
+      const base = `https://api.github.com/repos/\( {owner}/ \){repo}/contents`;
+      const headers = {
+        'Authorization': `token ${pat}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      };
+
+      const files = [
+        { path: 'backend/README.md', msg: 'Init backend', content: '# Backend\nJava Quarkus + MACHETE CUTTER' },
+        { path: 'frontend/index.html', msg: 'Init frontend home', content: '<!DOCTYPE html><html><head><title>Forge 66</title></head><body><h1>Sovereign Forge</h1></body></html>' },
+        { path: 'frontend/css/style.css', msg: 'Add theme', content: 'body{background:#000;color:#a855f7;}' },
+        { path: 'frontend/js/main.js', msg: 'Add JS', content: '// Forge JS\nconsole.log("Init");' },
+        { path: 'docs/setup.md', msg: 'Init docs', content: '# Setup\nForge 66 guide' }
+      ];
+
+      for (const f of files) {
+        try {
+          let sha = null;
+          const check = await fetch(`\( {base}/ \){f.path}`, { headers });
+          if (check.ok) {
+            const data = await check.json();
+            sha = data.sha;
+          }
+
+          const res = await fetch(`\( {base}/ \){f.path}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              message: `Auto-init: ${f.path}`,
+              content: btoa(f.content),
+              sha
+            })
+          });
+
+          if (res.ok) {
+            status.textContent += `Created/Updated: ${f.path}\n`;
+          } else {
+            const err = await res.json();
+            status.textContent += `Error ${f.path}: ${err.message}\n`;
+          }
+        } catch (e) {
+          status.textContent += `Network error: ${e.message}\n`;
+        }
+      }
+
+      status.textContent += '\nDone! Refresh repo to see changes.';
+    }
+  </script>
+</body>
+</html>
